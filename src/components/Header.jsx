@@ -11,7 +11,9 @@ import Slide from '@material-ui/core/Slide';
 import { fade, makeStyles } from '@material-ui/core/styles';
 import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
+import PetsIcon from '@material-ui/icons/Pets';
 import Body from "./Body";
+
 
 const useStyles = makeStyles((theme) => ({
     inputRoot: {
@@ -80,12 +82,12 @@ const Header = (props) => {
 
   const inputChange = event => {
       const value = event.target.value;
-      setBreed(false);
       setInput(value);
-      setStatus(false);
   }
 
   const formSubmit = (e) => {
+      setStatus(false);
+      setBreed(false);
       setBreed(input);
       setStatus(true);
       e.preventDefault();
@@ -97,14 +99,14 @@ const Header = (props) => {
       <HideOnScroll {...props}>
         <AppBar color="default">
           <Toolbar>
-            <Typography variant="h6">Dog App</Typography>
+            <Typography variant="h6"><PetsIcon /> Dog Search</Typography>
             <div className={classes.search}>
               <form onSubmit={formSubmit}>
                 <div className={classes.searchIcon}>
                 <SearchIcon />
                 </div>
                 <InputBase
-                placeholder="Search…"
+                placeholder="Enter breed..."
                 classes={{
                     root: classes.inputRoot,
                     input: classes.inputInput,
