@@ -1,105 +1,84 @@
-import React, { useState, useEffect } from "react";
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import React, { useReducer, useEffect } from "react";
+import { Grid, Container } from '@material-ui/core';
 import _ from "lodash";
+import useStyles from '../styles/styles'
+import ImageContainer from './ImageContainer';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1
-      },
-      paper: {
-        padding: theme.spacing(1),
-        textAlign: 'center',
-        color: theme.palette.text.secondary,
-        height: "200px",
-        width: "100%",
-      }
-}));
+const initialState = {
+    isLoading : false,
+    dog : [],
+    error : ''
+}
 
-const FormRow = ({ imgSrc, title }) => {
+const reducer = (state = initialState, action) => {
+    switch(action.type) {
+        case 'FETCH_REQUEST' :
+            return {
+                ...state,
+                isLoading : true,
+            }
+        case 'FETCH_SUCCESS' :
+            return {
+                isLoading : false,
+                dog : action.payload,
+                error : ''
+            }
+        case 'FETCH_ERROR' :
+            return {
+                isLoading : false,
+                dog : [],
+                error : 'Breed not found!'
+            }
+        default :
+            return state
+    }
+}
+
+const Body = ({ breed, status }) => {
     const classes = useStyles();
-    const [isLoaded, setLoaded] = useState(false);
+    const [state, dispatch] = useReducer(reducer, initialState)
+    const dogBreed = _.kebabCase(breed);
     
-    
-      return (
-        <React.Fragment >
-          <Grid item xs={3} className={"shadow-drop-2-center"} >
-            <Paper className={classes.paper} >
-                {!isLoaded && <CircularProgress style={{marginTop: "50px"}} disableShrink />}
-                <img 
-                    src={imgSrc} 
-                    alt={title} 
-                    width="100%" 
-                    height="100%" 
-                    style={!isLoaded ? { display: "none" } : { display: "block" }} 
-                    onLoad={() => setLoaded(true)}/>
-            </Paper>
-          </Grid>
-        </React.Fragment>
-      );
-  }
+    useEffect(() => { 
+            if(status) {
+                dispatch({ type : 'FETCH_REQUEST'})
+                fetch(`https://dog.ceo/api/breed/${dogBreed}/images`)
+                    .then(res => res.json())
+                    .then((data) => {
+                        if(data.status === "success") {
+                            dispatch({ type : 'FETCH_SUCCESS', payload : data.message })
+                        } else {
+                            dispatch({ type : 'FETCH_ERROR'})
+                        }
+                    },
+                    (e) => dispatch({ type : 'FETCH_ERROR'}));
+            }
+    }, [dogBreed, status]);
+       
+    const { isLoading, dog, error } = state;
 
-const Body = (props) => {
-        const classes = useStyles();
-        const [dog, setDog] = useState([]);
-        const [loading, setLoading] = useState(false);
-        const [error, setError] = useState(null);
-        const breed = _.kebabCase(props.breed);
-        
-        useEffect(() => { 
-                if(!!props.status) {
-                    setError(null);
-                    setLoading(false);
-                    setDog([]);
-                    const fetchAPI = () => {
-                        const api_url = "https://dog.ceo/api/breed/" + breed + "/images";
-                        fetch(api_url)
-                            .then(res => res.json())
-                                .then((data) => {
-                                    setLoading(true);
-                                    if(data.status === "success") {
-                                        setDog([...data.message]);
-                                    } else {
-                                        setError(data);
-                                    }
-                                },
-                                (error) => {
-                                    setLoading(true);
-                                    setError(error);
-                                });
-                    };
-    
-                     fetchAPI(); 
-                }
-                
-        }, [breed, props.status]);
-        
-       if(error && !!props.status) {
-            return (
+    return (
+        <div>
+        {
+            error ? (
                 <Container maxWidth={false} style={{ textAlign: "center", marginTop: "50px"}}>
-                    <p>{error.message}</p>
+                    <p>{error}</p>
                 </Container>
-            );
-       } else if(!loading && !!props.status) {
-            return (
-                        <Container maxWidth={false} style={{ textAlign: "center", marginTop: "50px"}}>
-                            <p>Please wait while fetching . . . </p>
-                        </Container>
-            );
-        }else {
-            return (
-                <div className={classes.root}>
+            ) : isLoading ? (
+            <Container maxWidth={false} style={{ textAlign: "center", marginTop: "50px"}}>
+                <p>Please wait while fetching . . . </p>
+            </Container>
+            ) : (<div className={classes.root}>
                     <Grid container spacing={1} >
                     <Grid container item spacing={2}>
-                        {props.status && dog.map((src, index) => <FormRow imgSrc={src} title={breed} key={index}/>)}
+                        {status && dog.map((src, index) => <ImageContainer imgSrc={src} title={dogBreed} key={index}/>)}
                     </Grid>
                     </Grid>
                 </div>
-            );
+            ) 
         }
-    }
+        </div>
+    )        
+} 
 
 export default Body;
