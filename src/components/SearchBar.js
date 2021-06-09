@@ -9,19 +9,19 @@ const SearchBar = (props) => {
     return (
         <div className={classes.search}>
             <form onSubmit={props.handleSubmit}>
-            <div className={classes.searchIcon}>
-            <SearchIcon />
-            </div>
-            <InputBase
-                placeholder="Enter breed..."
-                classes={{
-                    root: classes.inputRoot,
-                    input: classes.inputInput,
-                }}
-                inputProps={{ 'aria-label': 'search' }}
-                onChange={props.handleChange}
-                value={props.input}
-            />
+                <div className={classes.searchIcon}>
+                    <SearchIcon />
+                </div>
+                <InputBase
+                    placeholder="Enter breed..."
+                    classes={{
+                        root: classes.inputRoot,
+                        input: classes.inputInput,
+                    }}
+                    inputProps={{ 'aria-label': 'search' }}
+                    onChange={props.handleChange}
+                    value={props.input}
+                />
             </form>
         </div>
     )
